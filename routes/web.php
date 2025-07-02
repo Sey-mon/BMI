@@ -39,8 +39,34 @@ Route::middleware('auth')->group(function () {
 
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    
+    // Users Management
     Route::get('/users', [AdminController::class, 'users'])->name('users');
+    
+    // Patients Management
+    Route::get('/patients', [AdminController::class, 'patients'])->name('patients');
+    Route::post('/patients', [AdminController::class, 'storePatient'])->name('patients.store');
+    Route::get('/patients/{patient}', [AdminController::class, 'showPatient'])->name('patients.show');
+    
+    // Nutrition Assessments
+    Route::get('/nutrition', [AdminController::class, 'nutrition'])->name('nutrition');
+    Route::post('/nutrition', [AdminController::class, 'storeNutrition'])->name('nutrition.store');
+    Route::get('/nutrition/{nutrition}', [AdminController::class, 'showNutrition'])->name('nutrition.show');
+    
+    // Inventory Management
+    Route::get('/inventory', [AdminController::class, 'inventory'])->name('inventory');
+    Route::post('/inventory', [AdminController::class, 'storeInventory'])->name('inventory.store');
+    Route::get('/inventory/{inventory}', [AdminController::class, 'showInventory'])->name('inventory.show');
+    Route::post('/inventory/transaction', [AdminController::class, 'storeTransaction'])->name('inventory.transaction');
+    
+    // Transactions
+    Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');
+    Route::post('/transactions', [AdminController::class, 'storeTransaction'])->name('transactions.store');
+    
+    // Reports
+    Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
 });
 
 require __DIR__.'/auth.php';
