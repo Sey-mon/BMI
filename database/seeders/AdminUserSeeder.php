@@ -31,5 +31,14 @@ class AdminUserSeeder extends Seeder
             'role' => 'user',
             'email_verified_at' => now(),
         ]);
+        
+        // Create nutritionist user
+        User::create([
+            'name' => 'Nutritionist User',
+            'email' => 'nutritionist@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'nutritionist',
+            'email_verified_at' => now(),
+        ]);
     }
 }

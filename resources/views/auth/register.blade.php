@@ -136,6 +136,20 @@
                         @enderror
                     </div>
                 </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="role">Account Type</label>
+                        <select id="role" class="form-input" name="role" required>
+                            <option value="user">Parent/Guardian</option>
+                            <option value="nutritionist">Nutritionist</option>
+                        </select>
+                        <div class="text-sm text-gray-500 mt-1">Admin accounts can only be created by existing administrators.</div>
+                        @error('role')
+                            <div class="error-message">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
             </div>
 
             <!-- Basic Information -->

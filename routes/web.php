@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\NutritionistController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,6 +28,8 @@ Route::get('/dashboard', function () {
     
     if ($user->isAdmin()) {
         return redirect()->route('admin.dashboard');
+    } elseif ($user->isNutritionist()) {
+        return redirect()->route('nutritionist.dashboard');
     }
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -67,6 +70,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Reports
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+});
+
+// Nutritionist Routes
+Route::middleware(['auth', 'nutritionist'])->prefix('nutritionist')->name('nutritionist.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [NutritionistController::class, 'dashboard'])->name('dashboard');
+    
+    // Patients Management - Nutritionists can view and manage patients
+    Route::get('/patients', [NutritionistController::class, 'patients'])->name('patients');
+    Route::post('/patients', [NutritionistController::class, 'storePatient'])->name('patients.store');
+    Route::get('/patients/{patient}', [NutritionistController::class, 'showPatient'])->name('patients.show');
+    
+    // Nutrition Assessments - Core functionality for nutritionists
+    Route::get('/nutrition', [NutritionistController::class, 'nutrition'])->name('nutrition');
+    Route::post('/nutrition', [NutritionistController::class, 'storeNutrition'])->name('nutrition.store');
+    Route::get('/nutrition/{nutrition}', [NutritionistController::class, 'showNutrition'])->name('nutrition.show');
+    
+    // Reports - Nutritionists can view reports
+    Route::get('/reports', [NutritionistController::class, 'reports'])->name('reports');
 });
 
 require __DIR__.'/auth.php';
