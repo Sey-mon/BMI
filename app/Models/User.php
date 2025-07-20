@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 /**
  * @property string $role
  * @method bool isAdmin()
- * @method bool isUser()
+ * @method bool isParent()
  * @method bool isNutritionist()
  */
 class User extends Authenticatable
@@ -29,6 +29,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'facility_name',
+        'license_number',
+        'phone_number',
     ];
 
     /**
@@ -63,11 +66,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is a regular user
+     * Check if user is a parent/guardian
      */
-    public function isUser(): bool
+    public function isParent(): bool
     {
-        return $this->role === 'user';
+        return $this->role === 'parents';
     }
     
     /**

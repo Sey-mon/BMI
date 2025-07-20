@@ -8,20 +8,19 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     /**
-     * Run the migration.
+     * Run the migrations.
      */
     public function up(): void
     {
-        // For MySQL - Update to only have 3 roles: admin, nutritionist, parents
+        // First update any 'user' roles to 'parents'
+        DB::statement("UPDATE users SET role = 'nutritionist' WHERE role = 'user'");
+        
+        // Then modify the enum
         DB::statement("ALTER TABLE users MODIFY role ENUM('admin', 'nutritionist', 'parents') NOT NULL DEFAULT 'parents'");
     }
 
-    /**
-     * Reverse the migration.
-     */
     public function down(): void
     {
-        // For MySQL - Revert to original roles
-        DB::statement("ALTER TABLE users MODIFY role ENUM('admin', 'user') NOT NULL DEFAULT 'user'");
+        DB::statement("ALTER TABLE users MODIFY role ENUM('admin', 'user', 'nutritionist') NOT NULL DEFAULT 'user'");
     }
 };

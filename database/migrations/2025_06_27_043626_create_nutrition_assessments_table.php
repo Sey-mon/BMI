@@ -19,7 +19,6 @@ return new class extends Migration
             $table->decimal('weight', 5, 2); // kg
             $table->decimal('height', 5, 2); // cm
             $table->decimal('bmi', 4, 2);
-            $table->decimal('muac', 4, 1)->nullable(); // Mid-Upper Arm Circumference in cm
             $table->enum('nutrition_status', [
                 'normal', 
                 'mild_malnutrition', 
