@@ -22,7 +22,7 @@ return new class extends Migration
             $table->enum('assessment_method', ['manual', 'api', 'hybrid'])->default('manual')->after('model_version');
             
             // Additional Clinical Fields
-            $table->boolean('edema')->default(false)->after('muac');
+            $table->boolean('edema')->default(false)->after('height');
             $table->text('feeding_practices')->nullable()->after('dietary_intake');
             $table->enum('appetite', ['poor', 'fair', 'good'])->nullable()->after('feeding_practices');
             $table->boolean('vomiting')->default(false)->after('appetite');

@@ -98,49 +98,60 @@
 
     <!-- Filter Section -->
     <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Search Items</label>
-                <input type="text" id="searchItems" placeholder="Search by name or code..." 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        <form method="GET" action="">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search Items</label>
+                    <input type="text" id="searchItems" name="search" placeholder="Search by name or code..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="{{ request('search') }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select id="categoryFilter" name="category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">All Categories</option>
+                        <option value="supplements" {{ request('category') == 'supplements' ? 'selected' : '' }}>Supplements</option>
+                        <option value="food" {{ request('category') == 'food' ? 'selected' : '' }}>Food Items</option>
+                        <option value="medicine" {{ request('category') == 'medicine' ? 'selected' : '' }}>Medicine</option>
+                        <option value="equipment" {{ request('category') == 'equipment' ? 'selected' : '' }}>Equipment</option>
+                        <option value="other" {{ request('category') == 'other' ? 'selected' : '' }}>Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Stock Status</label>
+                    <select id="stockFilter" name="stock_status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">All Stock Levels</option>
+                        <option value="in_stock" {{ request('stock_status') == 'in_stock' ? 'selected' : '' }}>In Stock</option>
+                        <option value="low_stock" {{ request('stock_status') == 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                        <option value="out_of_stock" {{ request('stock_status') == 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                    <select id="unitFilter" name="unit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">All Units</option>
+                        <option value="pieces" {{ request('unit') == 'pieces' ? 'selected' : '' }}>Pieces</option>
+                        <option value="kg" {{ request('unit') == 'kg' ? 'selected' : '' }}>Kilograms</option>
+                        <option value="liters" {{ request('unit') == 'liters' ? 'selected' : '' }}>Liters</option>
+                        <option value="boxes" {{ request('unit') == 'boxes' ? 'selected' : '' }}>Boxes</option>
+                        <option value="bottles" {{ request('unit') == 'bottles' ? 'selected' : '' }}>Bottles</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Barangay</label>
+                    <select name="barangay" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">All Barangays</option>
+                        @foreach($barangays as $barangay)
+                            <option value="{{ $barangay }}" {{ (isset($selectedBarangay) && $selectedBarangay == $barangay) ? 'selected' : '' }}>{{ $barangay }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                        Apply Filters
+                    </button>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select id="categoryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                    <option value="">All Categories</option>
-                    <option value="supplements">Supplements</option>
-                    <option value="food">Food Items</option>
-                    <option value="medicine">Medicine</option>
-                    <option value="equipment">Equipment</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Stock Status</label>
-                <select id="stockFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                    <option value="">All Stock Levels</option>
-                    <option value="in_stock">In Stock</option>
-                    <option value="low_stock">Low Stock</option>
-                    <option value="out_of_stock">Out of Stock</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
-                <select id="unitFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                    <option value="">All Units</option>
-                    <option value="pieces">Pieces</option>
-                    <option value="kg">Kilograms</option>
-                    <option value="liters">Liters</option>
-                    <option value="boxes">Boxes</option>
-                    <option value="bottles">Bottles</option>
-                </select>
-            </div>
-            <div class="flex items-end">
-                <button onclick="exportInventory()" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition duration-200">
-                    Export
-                </button>
-            </div>
-        </div>
+        </form>
     </div>
 
     <!-- Inventory Table -->
@@ -173,7 +184,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $item->name }}</div>
-                                    <div class="text-sm text-gray-500">Code: {{ $item->code }}</div>
+                                    <div class="text-sm text-gray-500">SKU: {{ $item->sku }}</div>
                                 </div>
                             </div>
                         </td>
@@ -221,8 +232,12 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
                                 <a href="{{ route('admin.inventory.show', $item) }}" class="text-green-600 hover:text-green-900">View</a>
-                                <button onclick="editItem('{{ $item->id }}')" class="text-blue-600 hover:text-blue-900">Edit</button>
-                                <button onclick="deleteItem('{{ $item->id }}')" class="text-red-600 hover:text-red-900">Delete</button>
+                                <a href="{{ route('admin.inventory.edit', $item) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                                <form action="{{ route('admin.inventory.destroy', $item) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this item?')">Delete</button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -260,8 +275,8 @@
                             <input type="text" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Item Code</label>
-                            <input type="text" name="code" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Item SKU</label>
+                            <input type="text" name="sku" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                         </div>
                     </div>
                     
@@ -307,6 +322,17 @@
                     </div>
                     
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Barangay</label>
+                        <select name="barangay" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">Select Barangay</option>
+                            @foreach($barangays as $barangay)
+                                <option value="{{ $barangay }}">{{ $barangay }}</option>
+                            @endforeach
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                         <textarea name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Additional details about the item..."></textarea>
                     </div>
@@ -336,7 +362,7 @@
                         <select name="inventory_item_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                             <option value="">Select Item</option>
                             @foreach($inventoryItems as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }} ({{ $item->code }})</option>
+                            <option value="{{ $item->id }}">{{ $item->name }} ({{ $item->sku }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -377,21 +403,6 @@ function openModal(modalId) {
 
 function closeModal(modalId) {
     document.getElementById(modalId).classList.add('hidden');
-}
-
-function editItem(itemId) {
-    console.log('Edit item:', itemId);
-    // You can redirect to edit page or open edit modal
-    // window.location.href = `/admin/inventory/${itemId}/edit`;
-}
-
-function deleteItem(itemId) {
-    if (confirm('Are you sure you want to delete this item?')) {
-        console.log('Delete item:', itemId);
-        // You can make an AJAX call to delete the item
-        // fetch(`/admin/inventory/${itemId}`, { method: 'DELETE' })
-        //     .then(() => location.reload());
-    }
 }
 
 function exportInventory() {

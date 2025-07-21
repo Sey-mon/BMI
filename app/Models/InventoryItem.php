@@ -9,6 +9,7 @@ class InventoryItem extends Model
 {
     protected $fillable = [
         'name',
+        'barangay',
         'sku',
         'description',
         'category',
@@ -40,7 +41,7 @@ class InventoryItem extends Model
      */
     public function isLowStock()
     {
-        return $this->current_stock <= $this->minimum_stock;
+        return $this->getAttribute('current_stock') <= $this->getAttribute('minimum_stock');
     }
 
     /**

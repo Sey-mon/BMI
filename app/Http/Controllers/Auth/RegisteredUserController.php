@@ -56,12 +56,14 @@ class RegisteredUserController extends Controller
             'has_congenital_anomalies' => ['boolean'],
             'other_medical_problems' => ['nullable', 'string', 'max:1000'],
             'has_edema' => ['boolean'],
+            'religion' => ['required', 'string', 'max:255'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'barangay' => $request->barangay,
         ]);
 
         // Create patient record
@@ -87,6 +89,7 @@ class RegisteredUserController extends Controller
             'has_congenital_anomalies' => $request->boolean('has_congenital_anomalies'),
             'other_medical_problems' => $request->other_medical_problems,
             'has_edema' => $request->boolean('has_edema'),
+            'religion' => $request->religion,
         ]);
 
         event(new Registered($user));

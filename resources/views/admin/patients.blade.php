@@ -340,6 +340,13 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Other Medical Problems</label>
                         <textarea name="other_medical_problems" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Describe any other medical problems..."></textarea>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Religion</label>
+                            <input type="text" name="religion" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">

@@ -31,8 +31,30 @@
                         <x-nav-link :href="route('admin.reports')" :active="request()->routeIs('admin.reports')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
                             {{ __('Reports') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.api-test')" :active="request()->routeIs('admin.api-test')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
+                            {{ __('API Test') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
                             {{ __('Users') }}
+                        </x-nav-link>
+                    @elseif(Auth::user()->isNutritionist())
+                        <x-nav-link :href="route('nutritionist.dashboard')" :active="request()->routeIs('nutritionist.dashboard')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('nutritionist.patients')" :active="request()->routeIs('nutritionist.patients*')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
+                            {{ __('Patients') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('nutritionist.nutrition')" :active="request()->routeIs('nutritionist.nutrition*')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
+                            {{ __('Nutrition') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('nutritionist.inventory')" :active="request()->routeIs('nutritionist.inventory*')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
+                            {{ __('Inventory') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('nutritionist.transactions')" :active="request()->routeIs('nutritionist.transactions*')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
+                            {{ __('Transactions') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('nutritionist.reports')" :active="request()->routeIs('nutritionist.reports')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
+                            {{ __('Reports') }}
                         </x-nav-link>
                     @else
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white hover:text-green-100 hover:border-green-300" activeClass="border-white text-white">
@@ -110,8 +132,30 @@
                 <x-responsive-nav-link :href="route('admin.reports')" :active="request()->routeIs('admin.reports')" class="text-white hover:bg-green-800 hover:text-white">
                     {{ __('Reports') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.api-test')" :active="request()->routeIs('admin.api-test')" class="text-white hover:bg-green-800 hover:text-white">
+                    {{ __('API Test') }}
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')" class="text-white hover:bg-green-800 hover:text-white">
                     {{ __('Users') }}
+                </x-responsive-nav-link>
+            @elseif(Auth::user()->isNutritionist())
+                <x-responsive-nav-link :href="route('nutritionist.dashboard')" :active="request()->routeIs('nutritionist.dashboard')" class="text-white hover:bg-green-800 hover:text-white">
+                    {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('nutritionist.patients')" :active="request()->routeIs('nutritionist.patients*')" class="text-white hover:bg-green-800 hover:text-white">
+                    {{ __('Patients') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('nutritionist.nutrition')" :active="request()->routeIs('nutritionist.nutrition*')" class="text-white hover:bg-green-800 hover:text-white">
+                    {{ __('Nutrition') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('nutritionist.inventory')" :active="request()->routeIs('nutritionist.inventory*')" class="text-white hover:bg-green-800 hover:text-white">
+                    {{ __('Inventory') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('nutritionist.transactions')" :active="request()->routeIs('nutritionist.transactions*')" class="text-white hover:bg-green-800 hover:text-white">
+                    {{ __('Transactions') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('nutritionist.reports')" :active="request()->routeIs('nutritionist.reports')" class="text-white hover:bg-green-800 hover:text-white">
+                    {{ __('Reports') }}
                 </x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white hover:bg-green-800 hover:text-white">

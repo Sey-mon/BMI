@@ -32,6 +32,7 @@ class User extends Authenticatable
         'facility_name',
         'license_number',
         'phone_number',
+        'barangay',
     ];
 
     /**

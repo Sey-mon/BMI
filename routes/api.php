@@ -27,6 +27,15 @@ Route::prefix('malnutrition')->group(function () {
     Route::get('/protocols', [AssessmentController::class, 'getProtocols']);
 });
 
+// Add missing API routes for testing interface
+Route::get('/health', [AssessmentController::class, 'healthCheck']);
+Route::post('/assess', [AssessmentController::class, 'assess']);
+Route::get('/model-info', function() {
+    $service = app(\App\Services\MalnutritionService::class);
+    $result = $service->getModelInfo();
+    return response()->json($result);
+});
+
 // Protected API Routes
 Route::middleware('auth:sanctum')->group(function () {
     // Patient Management

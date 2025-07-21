@@ -32,6 +32,7 @@ class Patient extends Model
         'contact_number',
         'address',
         'guardian_name',
+        'religion',
         'guardian_contact',
         'status',
         'medical_history'

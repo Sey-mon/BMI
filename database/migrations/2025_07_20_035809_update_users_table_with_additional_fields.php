@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('facility_name')->nullable()->after('role');
             $table->string('license_number', 50)->nullable()->after('facility_name');
             $table->string('phone_number', 20)->nullable()->after('license_number');
+            $table->string('barangay');
             
             // Security and status
             $table->boolean('is_active')->default(true)->after('phone_number');

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\NutritionAssessment;
 use App\Models\Patient;
+use App\Models\InventoryItem;
+use App\Models\InventoryTransaction;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,40 +17,22 @@ class NutritionistController extends AdminController
      */
     public function dashboard()
     {
-        // Get total patients count
-        $totalPatients = Patient::count();
-        
-        // Get total assessments count
-        $totalAssessments = NutritionAssessment::count();
-        
-        // Get patients with critical nutrition status
-        $criticalCases = NutritionAssessment::where('nutrition_status', 'severe_malnutrition')
-            ->orderBy('assessment_date', 'desc')
-            ->with('patient')
-            ->take(5)
-            ->get();
-        
-        // Get nutrition status distribution
-        $nutritionStats = [
-            'normal' => NutritionAssessment::where('nutrition_status', 'normal')->count(),
-            'mild_malnutrition' => NutritionAssessment::where('nutrition_status', 'mild_malnutrition')->count(),
-            'moderate_malnutrition' => NutritionAssessment::where('nutrition_status', 'moderate_malnutrition')->count(),
-            'severe_malnutrition' => NutritionAssessment::where('nutrition_status', 'severe_malnutrition')->count(),
-        ];
-        
-        // Get assessments needing follow-up
-        $followupNeeded = NutritionAssessment::whereDate('next_assessment_date', '<=', now()->addDays(7))
-            ->with('patient')
-            ->take(5)
-            ->get();
-            
-        return view('nutritionist.dashboard', [
-            'totalPatients' => $totalPatients,
-            'totalAssessments' => $totalAssessments,
-            'criticalCases' => $criticalCases,
-            'nutritionStats' => $nutritionStats,
-            'followupNeeded' => $followupNeeded,
-        ]);
+        $barangay = auth()->user()->barangay;
+        $totalChildren = \App\Models\Patient::where('barangay', $barangay)->count();
+        $atRisk = \App\Models\Patient::where('barangay', $barangay)->whereHas('nutritionAssessments', function($q) {
+            $q->where('nutrition_status', 'at_risk');
+        })->count();
+        $recovered = \App\Models\Patient::where('barangay', $barangay)->whereHas('nutritionAssessments', function($q) {
+            $q->where('nutrition_status', 'normal');
+        })->count();
+        $totalInventory = \App\Models\InventoryItem::where('barangay', $barangay)->count();
+        $severe = \App\Models\Patient::where('barangay', $barangay)->whereHas('nutritionAssessments', function($q) {
+            $q->where('nutrition_status', 'severe_malnutrition');
+        })->count();
+        $moderate = \App\Models\Patient::where('barangay', $barangay)->whereHas('nutritionAssessments', function($q) {
+            $q->where('nutrition_status', 'moderate_malnutrition');
+        })->count();
+        return view('nutritionist.dashboard', compact('totalChildren', 'atRisk', 'recovered', 'totalInventory', 'severe', 'moderate'));
     }
     
     /**
@@ -177,5 +162,198 @@ class NutritionistController extends AdminController
         Patient::create($validated);
         
         return redirect()->route('nutritionist.patients')->with('success', 'Patient added successfully');
+    }
+
+    /**
+     * Show inventory management
+     */
+    public function inventory(Request $request)
+    {
+        $query = InventoryItem::query();
+        $query->where('barangay', auth()->user()->barangay);
+        $barangays = InventoryItem::distinct()->pluck('barangay');
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('sku', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%")
+                  ;
+            });
+        }
+        if ($request->filled('category')) {
+            $query->where('category', $request->get('category'));
+        }
+        if ($request->filled('unit')) {
+            $query->where('unit', $request->get('unit'));
+        }
+        if ($request->filled('stock_status')) {
+            if ($request->get('stock_status') === 'in_stock') {
+                $query->where('current_stock', '>', 0)->whereColumn('current_stock', '>', 'minimum_stock');
+            } elseif ($request->get('stock_status') === 'low_stock') {
+                $query->whereColumn('current_stock', '<=', 'minimum_stock')->where('current_stock', '>', 0);
+            } elseif ($request->get('stock_status') === 'out_of_stock') {
+                $query->where('current_stock', '<=', 0);
+            }
+        }
+        $inventoryItems = $query->paginate(15);
+        $totalItems = $inventoryItems->total();
+        $inStockItems = $inventoryItems->where('current_stock', '>', 0)->count();
+        $lowStockItems = $inventoryItems->where('current_stock', '<=', 'minimum_stock')->where('current_stock', '>', 0)->count();
+        $outOfStockItems = $inventoryItems->where('current_stock', '<=', 0)->count();
+        $expiringSoon = $inventoryItems->where('expiry_date', '<=', now()->addDays(30))->whereNotNull('expiry_date');
+        return view('nutritionist.inventory', compact(
+            'inventoryItems', 
+            'totalItems', 
+            'inStockItems', 
+            'lowStockItems', 
+            'outOfStockItems', 
+            'expiringSoon',
+            'barangays'
+        ));
+    }
+
+    /**
+     * Show a specific inventory item
+     */
+    public function showInventory(InventoryItem $inventory)
+    {
+        $inventory->load('transactions.user');
+        return view('nutritionist.inventory.show', compact('inventory'));
+    }
+
+    /**
+     * Show edit form for a specific inventory item
+     */
+    public function editInventory(InventoryItem $inventory)
+    {
+        return view('nutritionist.inventory.edit', compact('inventory'));
+    }
+
+    /**
+     * Update a specific inventory item
+     */
+    public function updateInventory(Request $request, InventoryItem $inventory)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'sku' => 'required|string|max:50|unique:inventory_items,sku,' . $inventory->id,
+            'category' => 'required|in:supplements,food,medicine,equipment,other',
+            'unit' => 'required|string|max:50',
+            'current_stock' => 'required|numeric|min:0',
+            'minimum_stock' => 'required|numeric|min:0',
+            'expiry_date' => 'nullable|date|after:today',
+            'description' => 'nullable|string'
+        ]);
+        $inventory->update($request->all());
+        return redirect()->route('nutritionist.inventory.show', $inventory)->with('success', 'Item updated successfully.');
+    }
+
+    /**
+     * Destroy a specific inventory item
+     */
+    public function destroyInventory(InventoryItem $inventory)
+    {
+        $inventory->delete();
+        return redirect()->route('nutritionist.inventory')->with('success', 'Item deleted successfully.');
+    }
+
+    /**
+     * Store a new inventory item
+     */
+    public function storeInventory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'sku' => 'required|string|max:50|unique:inventory_items',
+            'category' => 'required|in:supplements,food,medicine,equipment,other',
+            'unit' => 'required|string|max:50',
+            'current_stock' => 'required|numeric|min:0',
+            'minimum_stock' => 'required|numeric|min:0',
+            'expiry_date' => 'nullable|date|after:today',
+            'description' => 'nullable|string'
+        ]);
+        $data = $request->all();
+        $data['barangay'] = auth()->user()->barangay;
+        InventoryItem::create($data);
+        return redirect()->route('nutritionist.inventory')->with('success', 'Item added successfully.');
+    }
+
+    /**
+     * Show inventory transactions
+     */
+    public function transactions()
+    {
+        $transactions = InventoryTransaction::with(['inventoryItem', 'user'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        $inventoryItems = InventoryItem::all();
+        $users = User::all();
+
+        $totalTransactions = InventoryTransaction::count();
+        $todayStockIn = InventoryTransaction::where('type', 'in')
+            ->whereDate('created_at', today())
+            ->sum('quantity');
+        $todayStockOut = InventoryTransaction::where('type', 'out')
+            ->whereDate('created_at', today())
+            ->sum('quantity');
+        $thisWeekTransactions = InventoryTransaction::where('created_at', '>=', now()->startOfWeek())
+            ->count();
+
+        return view('nutritionist.transactions', compact(
+            'transactions', 
+            'inventoryItems', 
+            'users', 
+            'totalTransactions', 
+            'todayStockIn', 
+            'todayStockOut', 
+            'thisWeekTransactions'
+        ));
+    }
+
+    /**
+     * Store a new transaction
+     */
+    public function storeTransaction(Request $request)
+    {
+        $validated = $request->validate([
+            'inventory_item_id' => 'required|exists:inventory_items,id',
+            'type' => 'required|in:in,out',
+            'quantity' => 'required|numeric|min:1',
+            'notes' => 'nullable|string'
+        ]);
+
+        $item = InventoryItem::find($validated['inventory_item_id']);
+        
+        $data = $validated;
+        $data['user_id'] = Auth::id();
+        $data['stock_before'] = $item->current_stock;
+        
+        if ($validated['type'] === 'in') {
+            $newStock = $item->current_stock + $validated['quantity'];
+        } else {
+            $newStock = max(0, $item->current_stock - $validated['quantity']);
+        }
+        
+        $data['stock_after'] = $newStock;
+        
+        // Update item stock
+        $item->update(['current_stock' => $newStock]);
+        
+        InventoryTransaction::create($data);
+
+        return redirect()->route('nutritionist.transactions')->with('success', 'Transaction recorded successfully.');
+    }
+
+    public function inventoryLog(Request $request)
+    {
+        $transactions = InventoryTransaction::with(['inventoryItem', 'user'])
+            ->whereHas('inventoryItem', function($q) {
+                $q->where('barangay', auth()->user()->barangay);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        return view('nutritionist.inventory-log', compact('transactions'));
     }
 }
