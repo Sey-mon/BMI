@@ -32,6 +32,7 @@ class Patient extends Model
         'contact_number',
         'address',
         'guardian_name',
+        'religion',
         'guardian_contact',
         'status',
         'medical_history'
@@ -122,7 +123,7 @@ class Patient extends Model
         if ($this->has_malaria) $problems[] = 'Malaria';
         if ($this->has_congenital_anomalies) $problems[] = 'Congenital Anomalies';
         if ($this->has_edema) $problems[] = 'Edema';
-        if ($this->other_medical_problems) $problems[] = $this->other_medical_problems;
+        if ($this->other_medical_problem) $problems[] = $this->other_medical_problem;
         
         return $problems;
     }

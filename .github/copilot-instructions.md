@@ -186,6 +186,33 @@ This is a Laravel project with authentication for both admin and regular users, 
   - Updated all nav-link, responsive-nav-link, and dropdown components to support the green theme
   - Ensured consistent styling across desktop and mobile interfaces
 
+## Role System Update (July 2025)
+- **Added Nutritionist Role**: Expanded the role system to include three roles: admin, user (parent), and nutritionist
+  - Created migration `2025_07_05_000000_update_role_enum_in_users_table.php` to update the role enum in users table
+  - Updated User model with `isNutritionist()` method to check for nutritionist permissions
+  - Created `NutritionistMiddleware` for protecting nutritionist-specific routes
+  - Registered the nutritionist middleware in `Kernel.php`
+  - Added dedicated routes for nutritionists with appropriate permissions
+  - Created a `NutritionistController` that extends `AdminController` with specialized methods
+  - Updated the registration form to allow users to select between Parent/Guardian and Nutritionist roles
+  - Updated the dashboard redirect logic to handle nutritionist users
+  - Added a seeded nutritionist test user (nutritionist@example.com)
+
+## Nutritionist Interface Update (July 5, 2025)
+- **Created Nutritionist Views**: Built complete interface for nutritionist users
+  - Created `resources/views/nutritionist/dashboard.blade.php` with statistics overview, critical cases, and follow-ups
+  - Created `resources/views/nutritionist/patients.blade.php` for patient management
+  - Created `resources/views/nutritionist/patient-details.blade.php` for detailed patient information
+  - Created `resources/views/nutritionist/nutrition.blade.php` for assessment creation and listing
+  - Created `resources/views/nutritionist/nutrition-details.blade.php` for detailed assessment view
+  - Created `resources/views/nutritionist/reports.blade.php` for nutrition status reporting
+  - Added BMI calculation, color-coded status indicators, and responsive data tables
+  - Implemented all necessary forms for creating patients and assessments
+- **Fixed Controller Methods**: Enhanced NutritionistController with required functionality
+  - Added `assessment_date` field handling for nutrition assessments
+  - Implemented `showPatient` and `storePatient` methods
+  - Configured proper redirects and success messages
+
 ## System Status
 ✅ **COMPLETED**: Laravel project with full authentication system
 ✅ **COMPLETED**: Multi-role user management (Admin/User)

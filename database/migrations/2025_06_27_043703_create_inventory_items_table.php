@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('inventory_items', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('barangay');
             $table->string('sku')->unique();
             $table->text('description')->nullable();
             $table->enum('category', [
@@ -22,6 +23,7 @@ return new class extends Migration
                 'medical_supplies',
                 'equipment',
                 'medications',
+                'medicine', // allow both singular and plural
                 'other'
             ]);
             $table->enum('unit', ['pieces', 'boxes', 'packets', 'bottles', 'kg', 'liters']);

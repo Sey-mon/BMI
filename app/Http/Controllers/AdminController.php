@@ -225,26 +225,53 @@ class AdminController extends Controller
     /**
      * Show inventory management
      */
-    public function inventory()
+    public function inventory(Request $request)
     {
-        $inventoryItems = InventoryItem::paginate(15);
-        
-        $totalItems = InventoryItem::count();
-        $inStockItems = InventoryItem::where('current_stock', '>', 0)->count();
-        $lowStockItems = InventoryItem::whereRaw('current_stock <= minimum_stock AND current_stock > 0')->count();
-        $outOfStockItems = InventoryItem::where('current_stock', '<=', 0)->count();
-        
-        $expiringSoon = InventoryItem::where('expiry_date', '<=', now()->addDays(30))
-            ->whereNotNull('expiry_date')
-            ->get();
-
+        $query = InventoryItem::query();
+        $barangays = InventoryItem::distinct()->pluck('barangay');
+        $selectedBarangay = $request->get('barangay');
+        if ($selectedBarangay) {
+            $query->where('barangay', $selectedBarangay);
+        }
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('sku', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%")
+                  ;
+            });
+        }
+        if ($request->filled('category')) {
+            $query->where('category', $request->get('category'));
+        }
+        if ($request->filled('unit')) {
+            $query->where('unit', $request->get('unit'));
+        }
+        if ($request->filled('stock_status')) {
+            if ($request->get('stock_status') === 'in_stock') {
+                $query->where('current_stock', '>', 0)->whereColumn('current_stock', '>', 'minimum_stock');
+            } elseif ($request->get('stock_status') === 'low_stock') {
+                $query->whereColumn('current_stock', '<=', 'minimum_stock')->where('current_stock', '>', 0);
+            } elseif ($request->get('stock_status') === 'out_of_stock') {
+                $query->where('current_stock', '<=', 0);
+            }
+        }
+        $inventoryItems = $query->paginate(15);
+        $totalItems = $inventoryItems->total();
+        $inStockItems = $inventoryItems->where('current_stock', '>', 0)->count();
+        $lowStockItems = $inventoryItems->where('current_stock', '<=', 'minimum_stock')->where('current_stock', '>', 0)->count();
+        $outOfStockItems = $inventoryItems->where('current_stock', '<=', 0)->count();
+        $expiringSoon = $inventoryItems->where('expiry_date', '<=', now()->addDays(30))->whereNotNull('expiry_date');
         return view('admin.inventory', compact(
             'inventoryItems', 
             'totalItems', 
             'inStockItems', 
             'lowStockItems', 
             'outOfStockItems', 
-            'expiringSoon'
+            'expiringSoon',
+            'barangays',
+            'selectedBarangay'
         ));
     }
 
@@ -252,7 +279,8 @@ class AdminController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:inventory_items',
+            'barangay' => 'required|string|max:255',
+            'sku' => 'required|string|max:50|unique:inventory_items',
             'category' => 'required|in:supplements,food,medicine,equipment,other',
             'unit' => 'required|string|max:50',
             'current_stock' => 'required|numeric|min:0',
@@ -260,9 +288,7 @@ class AdminController extends Controller
             'expiry_date' => 'nullable|date|after:today',
             'description' => 'nullable|string'
         ]);
-
         InventoryItem::create($request->all());
-
         return redirect()->route('admin.inventory')->with('success', 'Item added successfully.');
     }
 
@@ -270,6 +296,33 @@ class AdminController extends Controller
     {
         $inventory->load('transactions.user');
         return view('admin.inventory.show', compact('inventory'));
+    }
+
+    public function editInventory(InventoryItem $inventory)
+    {
+        return view('admin.inventory.edit', compact('inventory'));
+    }
+
+    public function updateInventory(Request $request, InventoryItem $inventory)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:inventory_items,code,' . $inventory->id,
+            'category' => 'required|in:supplements,food,medicine,equipment,other',
+            'unit' => 'required|string|max:50',
+            'current_stock' => 'required|numeric|min:0',
+            'minimum_stock' => 'required|numeric|min:0',
+            'expiry_date' => 'nullable|date|after:today',
+            'description' => 'nullable|string'
+        ]);
+        $inventory->update($request->all());
+        return redirect()->route('admin.inventory.show', $inventory)->with('success', 'Item updated successfully.');
+    }
+
+    public function destroyInventory(InventoryItem $inventory)
+    {
+        $inventory->delete();
+        return redirect()->route('admin.inventory')->with('success', 'Item deleted successfully.');
     }
 
     public function storeTransaction(Request $request)

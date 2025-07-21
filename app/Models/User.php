@@ -6,16 +6,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property string $role
  * @method bool isAdmin()
- * @method bool isUser()
+ * @method bool isParent()
+ * @method bool isNutritionist()
  */
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +29,10 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'facility_name',
+        'license_number',
+        'phone_number',
+        'barangay',
     ];
 
     /**
@@ -61,10 +67,18 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is a regular user
+     * Check if user is a parent/guardian
      */
-    public function isUser(): bool
+    public function isParent(): bool
     {
-        return $this->role === 'user';
+        return $this->role === 'parents';
+    }
+    
+    /**
+     * Check if user is a nutritionist
+     */
+    public function isNutritionist(): bool
+    {
+        return $this->role === 'nutritionist';
     }
 }
