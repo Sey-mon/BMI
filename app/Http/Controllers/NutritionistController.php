@@ -17,22 +17,52 @@ class NutritionistController extends AdminController
      */
     public function dashboard()
     {
-        $barangay = auth()->user()->barangay;
-        $totalChildren = \App\Models\Patient::where('barangay', $barangay)->count();
-        $atRisk = \App\Models\Patient::where('barangay', $barangay)->whereHas('nutritionAssessments', function($q) {
-            $q->where('nutrition_status', 'at_risk');
-        })->count();
-        $recovered = \App\Models\Patient::where('barangay', $barangay)->whereHas('nutritionAssessments', function($q) {
-            $q->where('nutrition_status', 'normal');
-        })->count();
-        $totalInventory = \App\Models\InventoryItem::where('barangay', $barangay)->count();
-        $severe = \App\Models\Patient::where('barangay', $barangay)->whereHas('nutritionAssessments', function($q) {
-            $q->where('nutrition_status', 'severe_malnutrition');
-        })->count();
-        $moderate = \App\Models\Patient::where('barangay', $barangay)->whereHas('nutritionAssessments', function($q) {
-            $q->where('nutrition_status', 'moderate_malnutrition');
-        })->count();
-        return view('nutritionist.dashboard', compact('totalChildren', 'atRisk', 'recovered', 'totalInventory', 'severe', 'moderate'));
+        // Get total patients count
+        $totalPatients = Patient::count();
+        
+        // Get total assessments count
+        $totalAssessments = NutritionAssessment::count();
+        
+        // Get patients with critical nutrition status
+        $criticalCases = NutritionAssessment::where('nutrition_status', 'severe_malnutrition')
+            ->orderBy('assessment_date', 'desc')
+            ->with('patient')
+            ->take(5)
+            ->get();
+        
+        // Get nutrition status distribution
+        $nutritionStats = [
+            'normal' => NutritionAssessment::where('nutrition_status', 'normal')->count(),
+            'mild_malnutrition' => NutritionAssessment::where('nutrition_status', 'mild_malnutrition')->count(),
+            'moderate_malnutrition' => NutritionAssessment::where('nutrition_status', 'moderate_malnutrition')->count(),
+            'severe_malnutrition' => NutritionAssessment::where('nutrition_status', 'severe_malnutrition')->count(),
+        ];
+        
+        // Get assessments needing follow-up
+        $followupNeeded = NutritionAssessment::whereDate('next_assessment_date', '<=', now()->addDays(7))
+            ->with('patient')
+            ->take(5)
+            ->get();
+
+        // Inventory statistics
+        $totalInventoryItems = InventoryItem::count();
+        $lowStockItems = InventoryItem::whereRaw('current_stock <= minimum_stock')->count();
+        $outOfStockItems = InventoryItem::where('current_stock', '<=', 0)->count();
+        $expiringSoon = InventoryItem::where('expiry_date', '<=', now()->addDays(30))
+            ->whereNotNull('expiry_date')
+            ->count();
+            
+        return view('nutritionist.dashboard', [
+            'totalPatients' => $totalPatients,
+            'totalAssessments' => $totalAssessments,
+            'criticalCases' => $criticalCases,
+            'nutritionStats' => $nutritionStats,
+            'followupNeeded' => $followupNeeded,
+            'totalInventoryItems' => $totalInventoryItems,
+            'lowStockItems' => $lowStockItems,
+            'outOfStockItems' => $outOfStockItems,
+            'expiringSoon' => $expiringSoon,
+        ]);
     }
     
     /**
@@ -170,12 +200,13 @@ class NutritionistController extends AdminController
     public function inventory(Request $request)
     {
         $query = InventoryItem::query();
-        $query->where('barangay', auth()->user()->barangay);
+        $query->where('barangay', Auth::user()->barangay);
         $barangays = InventoryItem::distinct()->pluck('barangay');
         if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%$search%")
+                  ->orWhere('code', 'like', "%$search%")
                   ->orWhere('sku', 'like', "%$search%")
                   ->orWhere('description', 'like', "%$search%")
                   ;
@@ -237,7 +268,7 @@ class NutritionistController extends AdminController
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'required|string|max:50|unique:inventory_items,sku,' . $inventory->id,
+            'code' => 'required|string|max:50|unique:inventory_items,code,' . $inventory->id,
             'category' => 'required|in:supplements,food,medicine,equipment,other',
             'unit' => 'required|string|max:50',
             'current_stock' => 'required|numeric|min:0',
@@ -265,7 +296,7 @@ class NutritionistController extends AdminController
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'required|string|max:50|unique:inventory_items',
+            'code' => 'required|string|max:50|unique:inventory_items',
             'category' => 'required|in:supplements,food,medicine,equipment,other',
             'unit' => 'required|string|max:50',
             'current_stock' => 'required|numeric|min:0',
@@ -274,7 +305,7 @@ class NutritionistController extends AdminController
             'description' => 'nullable|string'
         ]);
         $data = $request->all();
-        $data['barangay'] = auth()->user()->barangay;
+        $data['barangay'] = Auth::user()->barangay;
         InventoryItem::create($data);
         return redirect()->route('nutritionist.inventory')->with('success', 'Item added successfully.');
     }
@@ -350,7 +381,7 @@ class NutritionistController extends AdminController
     {
         $transactions = InventoryTransaction::with(['inventoryItem', 'user'])
             ->whereHas('inventoryItem', function($q) {
-                $q->where('barangay', auth()->user()->barangay);
+                $q->where('barangay', Auth::user()->barangay);
             })
             ->orderBy('created_at', 'desc')
             ->paginate(20);
