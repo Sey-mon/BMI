@@ -99,7 +99,6 @@ class NutritionistController extends AdminController
         // Validate request
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
-            'assessment_date' => 'required|date',
             'weight' => 'required|numeric',
             'height' => 'required|numeric',
             'muac' => 'nullable|numeric',
