@@ -81,4 +81,12 @@ class User extends Authenticatable
     {
         return $this->role === 'nutritionist';
     }
+
+    /**
+     * Get the children (patients) for the parent user
+     */
+    public function children()
+    {
+        return $this->hasMany(Patient::class, 'parent_id');
+    }
 }

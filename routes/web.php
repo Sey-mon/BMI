@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/my-children', [ProfileController::class, 'myChildren'])->name('profile.my-children');
 });
 
 // Admin Routes
@@ -88,6 +89,14 @@ Route::middleware(['auth', 'nutritionist'])->prefix('nutritionist')->name('nutri
     Route::post('/transactions', [App\Http\Controllers\NutritionistController::class, 'storeTransaction'])->name('transactions.store');
     Route::get('/transactions/log', [App\Http\Controllers\NutritionistController::class, 'inventoryLog'])->name('transactions.log');
 });
+
+// Nutritionist Application
+Route::get('/apply-nutritionist', [App\Http\Controllers\NutritionistApplicationController::class, 'showForm'])->name('nutritionist.apply');
+Route::post('/apply-nutritionist', [App\Http\Controllers\NutritionistApplicationController::class, 'submitForm'])->name('nutritionist.apply.submit');
+
+// Admin Nutritionist Approval
+Route::post('/admin/users/{user}/approve', [App\Http\Controllers\AdminController::class, 'approveUser'])->name('admin.users.approve');
+Route::post('/admin/users/{user}/reject', [App\Http\Controllers\AdminController::class, 'rejectUser'])->name('admin.users.reject');
 
 Route::middleware(['auth', 'parents'])->prefix('profile')->name('profile.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\ProfileController::class, 'dashboard'])->name('dashboard');

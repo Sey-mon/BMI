@@ -25,6 +25,13 @@
                         @if($user->phone_number)
                         <div class="text-xs text-gray-400">{{ $user->phone_number }}</div>
                         @endif
+                        @if($user->role === 'nutritionist' && $user->status === 'pending')
+                            <div class="mt-2 text-xs text-yellow-700">Nutritionist Application Pending</div>
+                            <div class="mt-1">
+                                <a href="{{ asset('storage/' . $user->id_document) }}" target="_blank" class="text-blue-600 underline text-xs mr-2">View ID</a>
+                                <a href="{{ asset('storage/' . $user->certificate) }}" target="_blank" class="text-blue-600 underline text-xs">View Certificate</a>
+                            </div>
+                        @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         @php
@@ -40,19 +47,30 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        @if($user->is_active)
+                        @if($user->role === 'nutritionist' && $user->status === 'pending')
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">Pending Approval</span>
+                        @elseif($user->is_active)
                             <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">Active</span>
                         @else
                             <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">Inactive</span>
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        @if($user->email_verified_at)
+                        @if($user->role === 'nutritionist' && $user->status === 'pending')
+                            <form action="{{ route('admin.users.approve', $user) }}" method="POST" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="ml-2 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Approve</button>
+                            </form>
+                            <form action="{{ route('admin.users.reject', $user) }}" method="POST" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="ml-1 px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">Reject</button>
+                            </form>
+                        @elseif($user->role === 'nutritionist' && $user->status === 'approved')
                             <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-600">Approved</span>
+                        @elseif($user->role === 'nutritionist' && $user->status === 'rejected')
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600">Rejected</span>
                         @else
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700">Pending</span>
-                            <button class="ml-2 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Approve</button>
-                            <button class="ml-1 px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">Reject</button>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-600">Approved</span>
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">

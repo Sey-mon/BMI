@@ -43,10 +43,6 @@
                                 <input type="number" step="0.1" name="height" id="height" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" required>
                             </div>
                             <div>
-                                <label for="muac" class="block text-sm font-medium text-gray-700">MUAC (cm)</label>
-                                <input type="number" step="0.1" name="muac" id="muac" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                            </div>
-                            <div>
                                 <label for="nutrition_status" class="block text-sm font-medium text-gray-700">Nutritional Status</label>
                                 <select name="nutrition_status" id="nutrition_status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" required>
                                     <option value="normal">Normal</option>
