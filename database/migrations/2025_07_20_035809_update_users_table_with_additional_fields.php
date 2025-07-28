@@ -25,6 +25,10 @@ return new class extends Migration
             // Indexes
             $table->index('role');
             $table->index('is_active');
+
+            $table->string('status')->default('approved'); // 'pending', 'approved', 'rejected'
+            $table->string('id_document')->nullable();
+            $table->string('certificate')->nullable();
         });
     }
 

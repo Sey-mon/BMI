@@ -127,4 +127,12 @@ class Patient extends Model
         
         return $problems;
     }
+
+    /**
+     * Get the parent (user) of the patient
+     */
+    public function parent()
+    {
+        return $this->belongsTo(User::class, 'parent_id');
+    }
 }

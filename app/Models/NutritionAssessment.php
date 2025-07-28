@@ -13,7 +13,6 @@ class NutritionAssessment extends Model
         'weight',
         'height',
         'bmi',
-        'muac',
         'nutrition_status',
         'risk_level',
         'symptoms',
@@ -29,7 +28,6 @@ class NutritionAssessment extends Model
         'weight' => 'decimal:2',
         'height' => 'decimal:2',
         'bmi' => 'decimal:2',
-        'muac' => 'decimal:1',
     ];
 
     /**

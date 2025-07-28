@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::table('patients', function (Blueprint $table) {
             $table->string('patient_number', 50)->unique()->after('id');
             $table->foreignId('created_by')->nullable()->after('status')->constrained('users')->onDelete('set null');
+            $table->foreignId('parent_id')->nullable()->after('created_by')->constrained('users')->onDelete('set null');
             
             // Indexes
             $table->index('patient_number');

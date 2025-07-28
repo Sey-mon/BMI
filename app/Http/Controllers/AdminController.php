@@ -54,10 +54,30 @@ class AdminController extends Controller
         return view('admin.users', compact('users'));
     }
 
+    public function approveUser(User $user)
+    {
+        if ($user->role === 'nutritionist' && $user->status === 'pending') {
+            $user->status = 'approved';
+            $user->save();
+            // Optionally: notify user
+        }
+        return redirect()->back()->with('success', 'Nutritionist approved successfully.');
+    }
+
+    public function rejectUser(User $user)
+    {
+        if ($user->role === 'nutritionist' && $user->status === 'pending') {
+            $user->status = 'rejected';
+            $user->save();
+            // Optionally: notify user
+        }
+        return redirect()->back()->with('success', 'Nutritionist rejected.');
+    }
+
     /**
      * Show patients management
      */
-    public function patients()
+    public function patients(Request $request)
     {
         $patients = Patient::with('lastAssessment')->paginate(15);
         
@@ -170,7 +190,6 @@ class AdminController extends Controller
             'patient_id' => 'required|exists:patients,id',
             'height' => 'required|numeric|min:0',
             'weight' => 'required|numeric|min:0',
-            'muac' => 'nullable|numeric|min:0',
             'temperature' => 'nullable|numeric|min:0',
             'clinical_signs' => 'nullable|array',
             'notes' => 'nullable|string',
@@ -196,9 +215,9 @@ class AdminController extends Controller
         }
 
         // Determine nutritional status (simplified logic)
-        if ($bmi < 16 || ($data['muac'] && $data['muac'] < 11.5)) {
+        if ($bmi < 16) {
             $data['nutrition_status'] = 'severe_malnutrition';
-        } elseif ($bmi < 18.5 || ($data['muac'] && $data['muac'] < 12.5)) {
+        } elseif ($bmi < 18.5) {
             $data['nutrition_status'] = 'moderate_malnutrition';
         } else {
             $data['nutrition_status'] = 'normal';

@@ -58,10 +58,6 @@
                             <p class="mt-1 font-semibold">{{ $assessment->bmi }}</p>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500">MUAC</p>
-                            <p class="mt-1">{{ $assessment->muac ?? 'Not measured' }} cm</p>
-                        </div>
-                        <div>
                             <p class="text-sm font-medium text-gray-500">Nutritional Status</p>
                             <p class="mt-1">
                                 <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
