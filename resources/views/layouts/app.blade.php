@@ -10,6 +10,9 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{{ asset('css/utilities.css') }}">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -34,6 +37,7 @@
                             <li><x-nav-link :href="route('admin.reports')" :active="request()->routeIs('admin.reports')">Reports</x-nav-link></li>
                             <li><x-nav-link :href="route('admin.api-test')" :active="request()->routeIs('admin.api-test')">API Test</x-nav-link></li>
                             <li><x-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">Users</x-nav-link></li>
+                            <li><x-nav-link :href="route('admin.email-templates.index')" :active="request()->routeIs('admin.email-templates*')">Email Templates</x-nav-link></li>
                         @elseif(Auth::user()->isNutritionist())
                             <li><x-nav-link :href="route('nutritionist.dashboard')" :active="request()->routeIs('nutritionist.dashboard')">Dashboard</x-nav-link></li>
                             <li><x-nav-link :href="route('nutritionist.patients')" :active="request()->routeIs('nutritionist.patients*')">Patients</x-nav-link></li>

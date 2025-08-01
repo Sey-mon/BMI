@@ -57,11 +57,11 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         @if($user->role === 'nutritionist' && $user->status === 'pending')
-                            <form action="{{ route('admin.users.approve', $user) }}" method="POST" style="display:inline;">
+                            <form action="{{ route('admin.users.approve', $user) }}" method="POST" class="inline-form">
                                 @csrf
                                 <button type="submit" class="ml-2 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Approve</button>
                             </form>
-                            <form action="{{ route('admin.users.reject', $user) }}" method="POST" style="display:inline;">
+                            <form action="{{ route('admin.users.reject', $user) }}" method="POST" class="inline-form">
                                 @csrf
                                 <button type="submit" class="ml-1 px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">Reject</button>
                             </form>

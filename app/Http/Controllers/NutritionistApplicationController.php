@@ -20,6 +20,7 @@ class NutritionistApplicationController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => ['required', 'confirmed', 'min:8', 'regex:/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/'],
+            'barangay' => 'nullable|string|max:255',
             'id_document' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
             'certificate' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
         ]);
@@ -31,6 +32,7 @@ class NutritionistApplicationController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'barangay' => $request->barangay,
             'role' => 'nutritionist',
             'status' => 'pending',
             'id_document' => $idPath,
