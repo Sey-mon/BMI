@@ -17,6 +17,7 @@
                     <li><x-nav-link :href="route('admin.reports')" :active="request()->routeIs('admin.reports')">Reports</x-nav-link></li>
                     <li><x-nav-link :href="route('admin.api-test')" :active="request()->routeIs('admin.api-test')">API Test</x-nav-link></li>
                     <li><x-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">Users</x-nav-link></li>
+                    <li><x-nav-link :href="route('admin.email-templates.index')" :active="request()->routeIs('admin.email-templates*')">Email Templates</x-nav-link></li>
                 @elseif(Auth::user()->isNutritionist())
                     <li><x-nav-link :href="route('nutritionist.dashboard')" :active="request()->routeIs('nutritionist.dashboard')">Dashboard</x-nav-link></li>
                     <li><x-nav-link :href="route('nutritionist.patients')" :active="request()->routeIs('nutritionist.patients*')">Patients</x-nav-link></li>

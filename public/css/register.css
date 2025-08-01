@@ -1,3 +1,4 @@
+/* Register Page Styles */
 body {
     min-height: 100vh;
     display: flex;
@@ -5,6 +6,29 @@ body {
     justify-content: center;
     background: linear-gradient(135deg, #e8f5e9 0%, #a8e063 100%);
 }
+
+/* Progress and Navigation */
+.register-progress {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.register-progress span {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.login-back-link {
+    position: fixed;
+    top: 24px;
+    right: 32px;
+    z-index: 10;
+    color: #2196f3;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Form Styles */
 .form-section {
     margin-bottom: 30px;
     padding: 20px;
@@ -12,17 +36,37 @@ body {
     border-radius: 8px;
     background-color: #f9fafb;
 }
+
 .form-section h3 {
     margin: 0 0 15px 0;
     color: #374151;
     font-size: 18px;
     font-weight: 600;
 }
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
+
+/* Form Inputs */
+.form-help-text {
+    color: #888;
+}
+
+.sex-other-input {
+    width: 120px;
+    display: inline-block;
+    margin-left: 8px;
+}
+
+/* Step Management */
+.register-step-hidden {
+    display: none;
+}
+
+/* Checkbox Styles */
 .checkbox-group {
     display: flex;
     flex-wrap: wrap;
@@ -68,6 +112,17 @@ body {
     color: #e53935;
     font-size: 0.95rem;
     margin-bottom: 0.5rem;
+}
+.password-feedback, .email-feedback {
+    font-size: 12px;
+    margin-top: 5px;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    border-left: 3px solid #dee2e6;
+}
+.password-feedback {
+    line-height: 1.4;
 }
 .success-message {
     color: #388e3c;

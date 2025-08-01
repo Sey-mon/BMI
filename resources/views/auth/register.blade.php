@@ -18,10 +18,10 @@
             ℹ️ New accounts are created as regular users by default. Admin access is managed separately.
         </div>
 
-        <div style="text-align:center;margin-bottom:1.5rem;">
-            <span id="register-progress" style="font-weight:600;font-size:1.1rem;"></span>
+        <div class="register-progress">
+            <span id="register-progress"></span>
         </div>
-        <a href="{{ route('login') }}" style="position:fixed;top:24px;right:32px;z-index:10;color:#2196f3;font-weight:600;text-decoration:none;">&larr; Back to Login</a>
+        <a href="{{ route('login') }}" class="login-back-link">&larr; Back to Login</a>
 
         <form method="POST" action="{{ route('register') }}" id="register-form">
             @csrf
@@ -57,9 +57,9 @@
                                 required 
                                 autocomplete="username"
                                 placeholder="Enter your email"
-                                pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
                             />
-                            <small style="color:#888;">A verification link will be sent to your email.</small>
+                            <small class="form-help-text">A verification link will be sent to your email. Format: user@domain.com</small>
                             @error('email')
                                 <div class="error-message">{{ $message }}</div>
                             @enderror
@@ -76,9 +76,14 @@
                                 required 
                                 autocomplete="new-password"
                                 placeholder="Choose a strong password"
-                                pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
+                                pattern="[A-Za-z0-9@#$%^&*!]{8,}"
+                                minlength="8"
                             />
-                            <small style="color:#888;">Minimum 8 characters, at least one letter and one number.</small>
+                            <small class="form-help-text">
+                                Password must be at least 8 characters long<br>
+                                ✓ Allowed: Letters (a-z, A-Z), Numbers (0-9), Special chars (@#$%^&*!)<br>
+                                ✓ Example: MyPass123! or SecureKey#9
+                            </small>
                             @error('password')
                                 <div class="error-message">{{ $message }}</div>
                             @enderror
@@ -165,22 +170,19 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            <label>Sex</label>
-                            <div class="checkbox-group">
-                                <div class="checkbox-item">
-                                    <input type="radio" id="sex_male" name="sex" value="male" {{ old('sex') == 'male' ? 'checked' : '' }} required>
-                                    <label for="sex_male">Male</label>
+                            <fieldset>
+                                <legend class="form-label">Sex</legend>
+                                <div class="checkbox-group">
+                                    <div class="checkbox-item">
+                                        <input type="radio" id="sex_male" name="sex" value="male" {{ old('sex') == 'male' ? 'checked' : '' }} required>
+                                        <label for="sex_male">Male</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="radio" id="sex_female" name="sex" value="female" {{ old('sex') == 'female' ? 'checked' : '' }} required>
+                                        <label for="sex_female">Female</label>
+                                    </div>
                                 </div>
-                                <div class="checkbox-item">
-                                    <input type="radio" id="sex_female" name="sex" value="female" {{ old('sex') == 'female' ? 'checked' : '' }} required>
-                                    <label for="sex_female">Female</label>
-                                </div>
-                                <div class="checkbox-item">
-                                    <input type="radio" id="sex_other" name="sex" value="other" {{ old('sex') == 'other' ? 'checked' : '' }} required>
-                                    <label for="sex_other">Other</label>
-                                    <input type="text" name="sex_other_text" class="form-input" style="width:120px;display:inline-block;margin-left:8px;" placeholder="Specify" value="{{ old('sex_other_text') }}">
-                                </div>
-                            </div>
+                            </fieldset>
                             @error('sex')
                                 <div class="error-message">{{ $message }}</div>
                             @enderror
@@ -189,38 +191,40 @@
                 </div>
                 <button class="auth-btn register-next" type="button">Next</button>
             </div>
-            <div class="register-step" style="display:none;"> <!-- Step 2: Household Information -->
+            <div class="register-step register-step-hidden"> <!-- Step 2: Household Information -->
                 <div class="form-section">
                     <h3>Household Information</h3>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="total_household_members">Total Household Members</label>
-                            <input 
+                            <select 
                                 id="total_household_members" 
                                 class="form-input" 
-                                type="number" 
                                 name="total_household_members" 
-                                value="{{ old('total_household_members') }}" 
                                 required
-                                min="1"
-                                placeholder="Total members in household"
-                            />
+                            >
+                                <option value="">Select total members</option>
+                                @for ($i = 1; $i <= 30; $i++)
+                                    <option value="{{ $i }}" {{ old('total_household_members') == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                @endfor
+                            </select>
                             @error('total_household_members')
                                 <div class="error-message">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="form-group">
                             <label for="household_adults">Number of Adults</label>
-                            <input 
+                            <select 
                                 id="household_adults" 
                                 class="form-input" 
-                                type="number" 
                                 name="household_adults" 
-                                value="{{ old('household_adults') }}" 
                                 required
-                                min="0"
-                                placeholder="Number of adults"
-                            />
+                            >
+                                <option value="">Select number of adults</option>
+                                @for ($i = 1; $i <= 30; $i++)
+                                    <option value="{{ $i }}" {{ old('household_adults') == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                @endfor
+                            </select>
                             @error('household_adults')
                                 <div class="error-message">{{ $message }}</div>
                             @enderror
@@ -229,16 +233,17 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="household_children">Number of Children</label>
-                            <input 
+                            <select 
                                 id="household_children" 
                                 class="form-input" 
-                                type="number" 
                                 name="household_children" 
-                                value="{{ old('household_children') }}" 
                                 required
-                                min="0"
-                                placeholder="Number of children"
-                            />
+                            >
+                                <option value="">Select number of children</option>
+                                @for ($i = 0; $i <= 30; $i++)
+                                    <option value="{{ $i }}" {{ old('household_children') == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                @endfor
+                            </select>
                             @error('household_children')
                                 <div class="error-message">{{ $message }}</div>
                             @enderror

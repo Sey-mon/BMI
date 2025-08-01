@@ -15,6 +15,13 @@ use Carbon\Carbon;
 class AdminController extends Controller
 {
     /**
+     * Create a new controller instance.
+     */
+    public function __construct()
+    {
+        // Middleware will be applied in routes
+    }
+    /**
      * Show the admin dashboard
      */
     public function dashboard()
@@ -59,9 +66,14 @@ class AdminController extends Controller
         if ($user->role === 'nutritionist' && $user->status === 'pending') {
             $user->status = 'approved';
             $user->save();
-            // Optionally: notify user
+            
+            // Send approval notification email
+            $user->notify(new \App\Notifications\NutritionistApprovedNotification());
+            
+            return redirect()->back()->with('success', 'Nutritionist approved successfully.');
         }
-        return redirect()->back()->with('success', 'Nutritionist approved successfully.');
+        
+        return redirect()->back()->with('error', 'Invalid user or status.');
     }
 
     public function rejectUser(User $user)
@@ -69,9 +81,12 @@ class AdminController extends Controller
         if ($user->role === 'nutritionist' && $user->status === 'pending') {
             $user->status = 'rejected';
             $user->save();
-            // Optionally: notify user
+            
+            // Optionally: Send rejection notification email
+            return redirect()->back()->with('success', 'Nutritionist rejected.');
         }
-        return redirect()->back()->with('success', 'Nutritionist rejected.');
+        
+        return redirect()->back()->with('error', 'Invalid user or status.');
     }
 
     /**

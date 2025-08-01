@@ -135,4 +135,51 @@ class Patient extends Model
     {
         return $this->belongsTo(User::class, 'parent_id');
     }
+
+    /**
+     * Calculate date of birth from age in months
+     */
+    public function getDateOfBirthAttribute()
+    {
+        if ($this->age_months) {
+            return Carbon::now()->subMonths($this->age_months);
+        }
+        return null;
+    }
+
+    /**
+     * Get age in years for display
+     */
+    public function getAgeInYearsAttribute()
+    {
+        if ($this->age_months) {
+            return floor($this->age_months / 12);
+        }
+        return 0;
+    }
+
+    /**
+     * Get remaining months after years
+     */
+    public function getRemainingMonthsAttribute()
+    {
+        if ($this->age_months) {
+            return $this->age_months % 12;
+        }
+        return 0;
+    }
+
+    /**
+     * Get formatted age display
+     */
+    public function getFormattedAgeAttribute()
+    {
+        $years = $this->age_in_years;
+        $months = $this->remaining_months;
+        
+        if ($years > 0) {
+            return $months > 0 ? "{$years} years, {$months} months" : "{$years} years";
+        }
+        return "{$months} months";
+    }
 }

@@ -39,4 +39,9 @@ return [
         'timeout' => env('MALNUTRITION_API_TIMEOUT', 10),
     ],
 
+    'nutrition_api' => [
+        'url' => env('NUTRITION_API_URL', 'https://your-api-endpoint.com/api'),
+        'key' => env('NUTRITION_API_KEY', ''),
+    ],
+
 ];

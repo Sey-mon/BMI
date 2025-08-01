@@ -7,11 +7,18 @@ use App\Models\Patient;
 use App\Models\InventoryItem;
 use App\Models\InventoryTransaction;
 use App\Models\User;
+use App\Services\NutritionAssessmentApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class NutritionistController extends AdminController
 {
+    protected $nutritionApiService;
+
+    public function __construct(NutritionAssessmentApiService $nutritionApiService)
+    {
+        $this->nutritionApiService = $nutritionApiService;
+    }
     /**
      * Show the nutritionist dashboard.
      */
@@ -99,32 +106,89 @@ public function patients(Request $request)
     }
     
     /**
-     * Store a new nutrition assessment
+     * Store a new nutrition assessment with API integration
      */
     public function storeNutrition(Request $request)
     {
         // Validate request
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
-            'weight' => 'required|numeric',
-            'height' => 'required|numeric',
-            'muac' => 'nullable|numeric',
-            'nutrition_status' => 'required|in:normal,mild_malnutrition,moderate_malnutrition,severe_malnutrition',
+            'weight' => 'required|numeric|min:0.1',
+            'height' => 'required|numeric|min:10',
+            'edema' => 'boolean',
             'clinical_signs' => 'nullable|string',
-            'next_assessment_date' => 'nullable|date',
+            'symptoms' => 'nullable|string',
+            'dietary_intake' => 'nullable|string',
+            'feeding_practices' => 'nullable|string',
+            'appetite' => 'nullable|in:poor,fair,good',
+            'vomiting' => 'boolean',
+            'diarrhea' => 'boolean',
+            'recommendations' => 'nullable|string',
+            'next_assessment_date' => 'nullable|date|after:today',
             'notes' => 'nullable|string'
         ]);
+
+        // Get patient information
+        $patient = Patient::find($validated['patient_id']);
         
         // Calculate BMI
         $weight = $validated['weight'];
-        $height = $validated['height'] / 100; // Convert cm to m
-        $bmi = $weight / ($height * $height);
+        $height = $validated['height'];
+        $heightInMeters = $height / 100; // Convert cm to m
+        $bmi = $weight / ($heightInMeters * $heightInMeters);
         $validated['bmi'] = round($bmi, 2);
-        
+
+        // Get API assessment using age in months from patient record
+        $hasEdema = $validated['edema'] ?? false;
+        $apiAssessment = $this->nutritionApiService->assessChild(
+            $validated['weight'],
+            $validated['height'],
+            $patient->age_months, // Use age_months from patient record
+            $patient->sex, // Use sex from patient record
+            $hasEdema
+        );
+
+        // Add API results to validated data
+        $validated = array_merge($validated, [
+            'assessed_by' => Auth::id(),
+            'assessment_date' => now(),
+            'whz_score' => $apiAssessment['whz_score'],
+            'waz_score' => $apiAssessment['waz_score'],
+            'haz_score' => $apiAssessment['haz_score'],
+            'confidence_score' => $apiAssessment['confidence_score'],
+            'api_response' => $apiAssessment['api_response'],
+            'model_version' => $apiAssessment['model_version'],
+            'assessment_method' => $apiAssessment['assessment_method'],
+            'edema' => $hasEdema,
+            'vomiting' => $validated['vomiting'] ?? false,
+            'diarrhea' => $validated['diarrhea'] ?? false,
+            'follow_up_required' => $this->determineFollowUpRequired($apiAssessment['overall_assessment'])
+        ]);
+
+        // Determine nutrition status based on API assessment
+        $validated['nutrition_status'] = $apiAssessment['overall_assessment'];
+
         // Create assessment
-        NutritionAssessment::create($validated);
-        
-        return redirect()->route('nutritionist.nutrition')->with('success', 'Nutrition assessment added successfully');
+        $assessment = NutritionAssessment::create($validated);
+
+        $message = 'Nutrition assessment added successfully with Z-score analysis';
+        if (!($apiAssessment['api_available'] ?? true)) {
+            $message .= ' (API unavailable - using fallback calculation)';
+        }
+
+        return redirect()->route('nutritionist.nutrition')->with('success', $message);
+    }
+
+    /**
+     * Determine if follow-up is required based on assessment
+     */
+    private function determineFollowUpRequired($overallAssessment)
+    {
+        return in_array($overallAssessment, [
+            'severe_malnutrition',
+            'moderate_malnutrition',
+            'mild_malnutrition'
+        ]);
     }
     
     /**

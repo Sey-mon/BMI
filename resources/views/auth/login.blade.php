@@ -23,6 +23,20 @@
                 </div>
             @endif
 
+            <!-- Success Messages (for email verification, etc.) -->
+            @if (session('success'))
+                <div class="success-message">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <!-- Error Messages -->
+            @if (session('error'))
+                <div class="error-message">
+                    {{ session('error') }}
+                </div>
+            @endif
+
 
             <form method="POST" action="{{ route('login') }}">
                 @csrf
